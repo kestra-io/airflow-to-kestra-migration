@@ -1,0 +1,25 @@
+mydag:
+  schedule: '@daily'
+  catchup: false
+  default_args:
+    owner: airflow
+    retries: 3
+    start_date: 2025-07-23
+  tags: ["example"]
+  tasks:
+    get_astronauts:
+      operator: airflow.operators.python.PythonOperator
+      python_callable_name: _get_astronauts
+      python_callable_file: /usr/local/airflow/include/tasks/get_astronauts.py
+      outlets: ["current_astronauts"]
+
+    print_astronaut_craft:
+      operator: airflow.operators.python.PythonOperator
+      python_callable_name: _print_astronaut_craft
+      python_callable_file: /usr/local/airflow/include/tasks/print_astronaut_craft.py
+      partial:
+        op_kwargs:
+          greeting: "Hello! :)"
+      expand:
+        op_args: get_astronauts.output
+      dependencies: [get_astronauts]

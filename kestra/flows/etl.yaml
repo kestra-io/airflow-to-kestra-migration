@@ -1,0 +1,20 @@
+id: etl
+namespace: airflow
+
+tasks:
+  - id: get_astronauts
+    type: io.kestra.plugin.core.http.Request
+    uri: http://api.open-notify.org/astros.json
+  
+  - id: for_each
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ fromJson(outputs.get_astronauts.body).people }}"
+    tasks:
+      - id: print_astronomer
+        type: io.kestra.plugin.core.log.Log
+        message: "{{ fromJson(taskrun.value).name }} is currently in space flying on the {{ fromJson(taskrun.value).craft }}"
+
+triggers:
+  - id: optional_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "@daily"

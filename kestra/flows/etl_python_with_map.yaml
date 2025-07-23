@@ -1,0 +1,61 @@
+id: etl_python_with_map
+namespace: airflow
+
+tasks:
+  - id: get_astronauts
+    type: io.kestra.plugin.scripts.python.Script
+    retry: 
+        type: constant
+        maxAttempt: 3
+        interval: PT1S    
+    dependencies:
+        - requests
+        - kestra
+    script: |
+      import requests
+      from kestra import Kestra
+
+      def get_astronauts() -> list[dict]:
+          """
+          Retrieves a list of astronauts currently in space from the public API.
+          Returns:
+              List of dictionaries, each representing an astronaut.
+          """
+          r = requests.get("http://api.open-notify.org/astros.json")
+          r.raise_for_status()
+          nr_of_people_in_space = r.json()["number"]
+          list_of_people_in_space = r.json()["people"]
+          print(f"Number of people in space: {nr_of_people_in_space}")
+          Kestra.outputs(
+              {
+                  "nr_of_people_in_space": nr_of_people_in_space,
+                  "list_of_people_in_space": list_of_people_in_space,
+              }
+          )
+          return list_of_people_in_space
+
+
+      def print_astronaut_craft(greeting: str, person_in_space: dict) -> None:
+          """
+          Prints a message about an astronaut's name and their craft.
+          """
+          craft = person_in_space["craft"]
+          name = person_in_space["name"]
+          print(f"{name} is currently in space flying on the {craft}! {greeting}")
+
+
+      def main():
+          astronauts = get_astronauts()
+          for person in astronauts:
+              print_astronaut_craft(greeting="Hello! :)", person_in_space=person)
+
+      if __name__ == "__main__":
+          main()
+
+  - id: for_each
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ outputs.get_astronauts.vars.list_of_people_in_space }}"
+    tasks:
+      - id: print_astronomer
+        type: io.kestra.plugin.core.log.Log
+        message: "{{ fromJson(taskrun.value).name }} is currently in space flying on the {{ fromJson(taskrun.value).craft }}"

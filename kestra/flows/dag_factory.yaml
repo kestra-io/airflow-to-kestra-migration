@@ -1,0 +1,60 @@
+id: dag_factory
+namespace: airflow
+tasks:
+  - id: dag
+    type: io.kestra.plugin.core.flow.Dag
+    tasks:
+      - task:
+          id: get_astronauts
+          type: io.kestra.plugin.core.http.Request
+          uri: http://api.open-notify.org/astros.json
+      - task:
+          id: for_each
+          type: io.kestra.plugin.core.flow.ForEach
+          values: "{{ fromJson(outputs.get_astronauts.body).people }}"
+          tasks:
+            - id: print_astronomers
+              type: io.kestra.plugin.core.log.Log
+              message: "{{ fromJson(taskrun.value).name }} is currently in space flying on the {{ fromJson(taskrun.value).craft }}"
+        dependsOn:
+          - get_astronauts
+      - task:
+          id: return_astronauts
+          type: io.kestra.plugin.core.output.OutputValues
+          values:
+            astronauts: "{{ fromJson(outputs.get_astronauts.body).people | jq('map(.name)') | flatten }}"
+            crafts: "{{ fromJson(outputs.get_astronauts.body).people | jq('map(.craft)') | flatten | distinct }}"
+        dependsOn:
+          - get_astronauts
+      - task:
+          id: greet_astronauts
+          type: io.kestra.plugin.core.log.Log
+          message: Hello {{ outputs.return_astronauts.values.astronauts }} 👋
+        dependsOn:
+          - return_astronauts
+      - task:
+          id: log_crafts
+          type: io.kestra.plugin.core.log.Log
+          message: "{{ outputs.return_astronauts.values.crafts }}"
+        dependsOn:
+          - greet_astronauts
+          - for_each
+description: |
+  This flow retrieves the list of astronauts currently in space from a public API, iterates over each astronaut to log their name and spacecraft, and summarizes the results. Specifically, it performs the following steps:
+
+  1. **Fetch Astronaut Data:**
+    Retrieves astronaut information from `http://api.open-notify.org/astros.json`.
+
+  2. **Log Astronaut Details:**
+    For each astronaut in the API response, logs their name and the craft they are on.
+
+  3. **Extract and Output Data:**
+    Collects the names of all astronauts and the distinct list of spacecrafts, making these available as outputs.
+
+  4. **Greet All Astronauts:**
+    Logs a greeting that includes the names of all astronauts currently in space.
+
+  5. **Log All Crafts:**
+    Logs the list of unique spacecrafts currently in use.
+
+  This flow demonstrates how to fetch data via HTTP, process it in a loop, and aggregate results using Kestra’s core plugins.          
