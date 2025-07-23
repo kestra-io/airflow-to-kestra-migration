@@ -126,22 +126,37 @@ Finally, the logs view is much easier to navigate as you can see all logs in one
 ## Advantages of Each Approach
 
 ### Airflow DAG Factory
+
 ✅ Possible to define task dependencies in Python
+
 ✅ An older tool, thus in some ways more mature ecosystem
+
 ✅ Larger OSS community, wider variety of documentation
+
 ❌ That larger source of possible documentation is a double-edged sword, as the downside is that you need to sift through a lot of outdated documentation and examples that are not relevant anymore or poor quality examples with no single ownership
+
 ❌ Complex setup with multiple separate Python files  
+
 ❌ No built-in autocompletion or syntax validation for YAML configuration
+
 ❌ Duplicated management of Python functions and YAML configuration
+
 ❌ Error-prone due to separate Python and YAML definitions, easy to break simply by renaming a function name; no true separation of business logic and configuration, as in the end they are tightly coupled together
 
 ### Kestra
+
 ✅ Everything-as-code: entire flow can be defined in a single, portable YAML file
-✅ Rich built-in plugin ecosystem that works out of the box without having to install and manage any additional Python packages
+
+✅ Rich built-in plugin ecosystem that works out of the box without havi
+
 ✅ Intuitive templating system that allows you to use variables and expressions in a simple and easier to debug way
+
 ✅ Built-in autocompletion and syntax validation in YAML Editor
+
 ✅ True separation of business logic and configuration, as everything is defined in a single YAML file and your business logic can optionally be defined in fully independent Namespace Files; there's no coupling between the two, so you can change your business logic without having to worry about breaking the workflow configuration
+
 ❌ Not possible to define task dependencies in Python, declarative language-agnostic YAML definition is used instead
+
 ❌ Some extra learning curve for Airflow users (albeit the syntax is straightforward and the flow can be defined also from No-Code or from built-in AI agent)
 
 ## Getting Started
