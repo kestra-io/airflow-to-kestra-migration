@@ -147,13 +147,13 @@ Finally, the logs view is much easier to navigate as you can see all logs in one
 
 ✅ Everything-as-code: entire flow can be defined in a single, portable YAML file
 
-✅ Rich built-in plugin ecosystem that works out of the box without havi
+✅ Rich built-in plugin ecosystem that works out of the box without having to install and manage any additional Python packages
 
 ✅ Intuitive templating system that allows you to use variables and expressions in a simple and easier to debug way
 
-✅ Built-in autocompletion and syntax validation in YAML Editor
+✅ Built-in autocompletion and syntax validation in the YAML Editor
 
-✅ True separation of business logic and configuration, as everything is defined in a single YAML file and your business logic can optionally be defined in fully independent Namespace Files; there's no coupling between the two, so you can change your business logic without having to worry about breaking the workflow configuration
+✅ True separation of business logic and configuration, as everything is defined in a single YAML file and your business logic can **optionally** be separated out into fully independent Namespace Files; there's no coupling between the two, so you can change your business logic without having to worry about breaking the flow configuration
 
 ❌ Not possible to define task dependencies in Python, declarative language-agnostic YAML definition is used instead
 
