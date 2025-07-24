@@ -143,6 +143,14 @@ Finally, the logs view is much easier to navigate as you can see all logs in one
 
 ❌ Error-prone due to separate Python and YAML definitions, easy to break simply by renaming a function name; no true separation of business logic and configuration, as in the end they are tightly coupled together
 
+❌ No way to see the actual workflow execution logs in one place, you need to navigate through each task instance separately, which is tedious when you have a lot of tasks or when you loop/map over a lot of values
+
+![alt text](images/airflow_logs.png)
+
+❌ When you rely on the DAG Factory method, you can't see the actual workflow code from the UI; instead, you only see the DAG Factory code used to parse the YAML definition
+
+![alt text](images/airflow_code_dag_factory.png)
+
 ### Kestra
 
 ✅ Everything-as-code: entire flow can be defined in a single, portable YAML file
