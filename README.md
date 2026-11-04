@@ -10,6 +10,8 @@ This project contains a practical example of migrating an ETL workflow that retr
 - **Airflow with DAG Factory** - YAML-driven configuration pattern
 - **Kestra** - Multiple implementation patterns showing different migration approaches
 
+> The Kestra flows target **Kestra 2.0** and use the `Loop` task. `ForEach` was removed in 2.0, so these flows don't run on Kestra 1.x. See the [ForEach to Loop migration guide](https://kestra.io/docs/migration-guide/v2.0.0/foreach-loop) for details.
+
 ## Repository Structure
 
 ```
@@ -91,19 +93,23 @@ partial:
 
 **Kestra:**
 
-You simply add a task that loops over specified values. The values can be passed dynamically based on output of previous task. The Debug Expression console in the UI makes it easy to troubleshoot the expressions and see what values will be passed to any task.
+You simply add a `Loop` task that iterates over specified values. The values can be passed dynamically based on output of previous task. The Debug Expression console in the UI makes it easy to troubleshoot the expressions and see what values will be passed to any task.
 
 ```yaml
-- id: for_each
-  type: io.kestra.plugin.core.flow.ForEach
+- id: loop
+  type: io.kestra.plugin.core.flow.Loop
   values: "{{ outputs.get_astronauts.vars.list_of_people_in_space }}"
   tasks:
     - id: print_astronomer
       type: io.kestra.plugin.core.log.Log
-      message: "{{ fromJson(taskrun.value).name }} is flying on {{ fromJson(taskrun.value).craft }}"
+      message: "{{ fromJson(item.value).name }} is flying on {{ fromJson(item.value).craft }}"
 ```
 
-Finally, the logs view is much easier to navigate as you can see all logs in one place without having to navigate through every single task instance as it's the case in Airflow. If you loop/map over a lot of values, navigating through the logs in Airflow is tedious, while in Kestra you can see all logs in one place.
+Like Airflow's dynamic task mapping, each `Loop` iteration runs on its own: Kestra 2.0 executes every iteration as an isolated sub-execution, with its own logs. The parent execution's **Logs** tab shows an **Iterations** summary with the state of every iteration, and links to the list of iteration executions, so you can go straight to the ones that failed.
+
+![Kestra Loop iterations in the Logs tab](images/kestra_loop_iterations.png)
+
+If you want the logs of every astronaut in a single log stream, keep the loop inside the Python script instead, as in `etl_python.yaml`.
 
 ## Migration Patterns
 
@@ -179,18 +185,20 @@ astro dev start
 ### Running the Kestra Example
 ```bash
 cd kestra
-docker-compose up -d
-# Access Kestra UI at http://localhost:8082 and import flows.zip
+docker compose up -d
+# Access Kestra UI at http://localhost:8082, create your admin account, and import flows.zip
 ```
+
+The Docker Compose file pins Kestra to a 2.x release (`kestra/kestra:v2.0.9`). To upgrade, change the image tag.
 
 ## Migration Strategy
 
 When migrating from Airflow DAG Factory to Kestra:
 
-1. **Start Simple**: Begin with the basic HTTP + ForEach pattern
+1. **Start Simple**: Begin with the basic HTTP + Loop pattern
 2. **Preserve Logic**: Move Python functions into Kestra Script tasks
 3. **Leverage Built-in Plugins**: Replace custom operators with Kestra plugins whenever possible as you benefit from faster runtime and easier dependency management
-4. **Optimize**: Use Kestra's native features for better performance e.g. add `concurrencyLimit: 0` to ForEach tasks to run all iterations in parallel or set it to a specific value e.g. `concurrencyLimit: 10` to limit concurrency to 10 mapped/looped tasks at a time
+4. **Optimize**: Use Kestra's native features for better performance. `Loop` runs all iterations in parallel by default (`concurrencyLimit: 0`), like Airflow's mapped tasks. Set `concurrencyLimit: 10` to run at most 10 iterations at a time, or `concurrencyLimit: 1` to run them one after the other
 5. **Test**: Validate outputs match your Airflow implementation
 
 This repository serves as a practical guide for teams looking to modernize their data orchestration stack from Airflow to Kestra.

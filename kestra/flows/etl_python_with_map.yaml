@@ -6,7 +6,7 @@ tasks:
     type: io.kestra.plugin.scripts.python.Script
     retry: 
         type: constant
-        maxAttempt: 3
+        maxAttempts: 3
         interval: PT1S    
     dependencies:
         - requests
@@ -52,10 +52,10 @@ tasks:
       if __name__ == "__main__":
           main()
 
-  - id: for_each
-    type: io.kestra.plugin.core.flow.ForEach
+  - id: loop
+    type: io.kestra.plugin.core.flow.Loop
     values: "{{ outputs.get_astronauts.vars.list_of_people_in_space }}"
     tasks:
       - id: print_astronomer
         type: io.kestra.plugin.core.log.Log
-        message: "{{ fromJson(taskrun.value).name }} is currently in space flying on the {{ fromJson(taskrun.value).craft }}"
+        message: "{{ fromJson(item.value).name }} is currently in space flying on the {{ fromJson(item.value).craft }}"

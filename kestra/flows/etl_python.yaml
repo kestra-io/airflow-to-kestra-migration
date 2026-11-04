@@ -6,7 +6,7 @@ tasks:
     type: io.kestra.plugin.scripts.python.Script
     retry: 
         type: constant
-        maxAttempt: 3
+        maxAttempts: 3
         interval: PT1S        
     dependencies:
         - requests
